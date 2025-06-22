@@ -1,0 +1,31 @@
+---
+title: 'Exploratory Data Analysis of NYC Flights 2023: Answering 10 Key Questions'
+author: "Kanyaphat Lokhan"
+date: "2025-06-22"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+Hello! I'm practicing the process of data transformation by using nycflights23 package. The data transformation is .... Let's begin!
+
+## Install Package
+
+First of all, we need to install the relevant packages, including nycflights23, which contains the flights dataset.
+```{r,message=FALSE}
+install.packages('dplyr')
+install.packages('tidyverse')
+install.packages('nycflights23')
+
+library(dplyr)
+library(tidyverse)
+library(nycflights23)
+```
+
+The flights contains information about all flights that departed from one of the three New York City airports (EWR, JFK, and LGA) in 2023. 
+Let's have a look at the structure.
+
+## Data overview
+```{r}
+print(flights)
+```
