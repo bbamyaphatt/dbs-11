@@ -1,0 +1,28 @@
+# Exploratory Data Analysis of NYC Flights 2023: Answering 10 Key Questions
+
+**Install Package**
+
+First of all, we need to install the relevant packages, including nycflights23, which contains the flights dataset.
+```{r}
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(nycflights23)
+```
+
+The flights contains information about all flights that departed from one of the three New York City airports (EWR, JFK, and LGA) in 2023. 
+Let's have a look at the structure.
+
+## Data structure
+
+1. What is the average departure delay for flights originating from EWR (Newark Liberty International Airport) in the month of July?
+
+   **ans** The average delay for flights originating from EWR in July is **63.21157** mins.
+   
+```{r}
+avg_dep <- flights %>%
+  filter(origin == "EWR" & month == 7 & !is.na(dep_delay) & dep_delay > 0) %>% 
+  summarise(avg_dep_delay = mean(dep_delay)) %>%
+
+print(avg_dep)
+```
