@@ -1,0 +1,192 @@
+---
+title: 'Exploratory Data Analysis of NYC Flights 2023: Answering 10 Key Questions'
+author: "Kanyaphat Lokhan"
+date: "2025-06-22"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+## Install Package
+
+First of all, we need to install the relevant packages, including nycflights23, which contains the flights dataset.
+```{r,message=FALSE}
+install.packages('dplyr')
+install.packages('tidyverse')
+install.packages('nycflights23')
+
+library(dplyr)
+library(tidyverse)
+library(nycflights23)
+```
+
+The flights contains information about all flights that departed from one of the three New York City airports (EWR, JFK, and LGA) in 2023. 
+Let's have a look at the structure.
+
+## Data overview
+```{r}
+str(flights)
+```
+
+## Column description
+- **year, month, day**: Date of departure.
+
+- **dep_time, arr_time**: Actual departure and arrival times, UTC.
+
+- **sched_dep_time, sched_arr_time**: Scheduled departure and arrival times, UTC.
+
+- **dep_delay, arr_delay**: Departure and arrival delays, in minutes. Negative times represent early departures/arrivals.
+
+- **hour, minute**: Time of scheduled departure broken into hour and minutes.
+
+- **carrier**: Two letter carrier abbreviation.
+
+- **tailnum**: Plane tail number.
+
+- **flight**: Flight number.
+
+- **origin, dest**: Origin and destination airport. See get_airports for additional metadata.
+
+- **air_time**: Amount of time spent in the air, in minutes.
+
+- **distance**: Distance between airports, in miles.
+
+- **time_hour**: Scheduled date and hour of the flight as a POSIXct date. Along with origin, can be used to join flights data to weather data.
+
+## Key Questions
+1. What is the average departure delay for flights originating from EWR (Newark Liberty International Airport) in the month of July?
+
+```{r}
+avg_dep_delay <- flights %>%
+  filter(origin == "EWR" & month == 7 & !is.na(dep_delay) & dep_delay > 0) %>% 
+  summarise(mean(dep_delay)) 
+
+print(avg_dep_delay)
+```
+
+**Ans** The average delay for flights originating from EWR in July is **63.2** mins
+
+2. How many flights were cancelled by each airline (carrier)? Show the carrier code and the count of cancelled flights.
+
+```{r}
+cancel_flights <- flights %>%
+  filter(is.na(air_time) & is.na(dep_delay) & is.na(arr_delay)
+         & is.na(dep_time) & is.na(arr_time)) %>%
+	group_by(carrier) %>%
+  summarise(cancelled_flights = n()) %>%
+  arrange (desc(cancelled_flights))
+
+print(cancel_flights)
+```
+
+**Ans** There are **14** airlines that have cancelled flights. Among them, YX airline has cancelled the most flights, with 3,062 cancellations, while HA airline has cancelled the fewest, with only 2 flights.
+
+3. Which destination airport (dest) had the highest average arrival delay in the dataset?
+
+```{r}
+highest_avg_arr_delay <- flights %>%
+  select(dest, arr_delay) %>%
+  filter (arr_delay > 0, !is.na(arr_delay)) %>%
+  group_by (dest) %>%
+  summarise(avg_arr_delay = mean(arr_delay)) %>%
+  arrange (desc(avg_arr_delay)) %>%
+  head(1)
+
+print(highest_avg_arr_delay)
+```
+**Ans** **EGE** had the highest average arrival delay, which is 74.9 mins.
+
+4. Create a new column called total_delay which is the sum of dep_delay and arr_delay. What is the median total_delay for flights in the dataset?
+
+```{r}
+med_delay <- flights %>%
+  mutate(total_delay = dep_delay + arr_delay) %>%
+  filter(!is.na(total_delay)) %>%
+  summarise(median_delay = median(total_delay)) 
+
+print(med_delay)
+```
+
+**Ans** Median total delay for flights is **-12**
+
+5. For flights departing in the first quarter of the year (January-March), what percentage of flights departed on time (dep_delay <= 0)?
+
+```{r}
+Q1_on_time <- flights %>%
+  filter (!is.na(dep_delay) & month %in% 1:3) %>%
+  summarise (total_flight = n(),
+             total_on_time_flight = sum(dep_delay <= 0),
+             dep_on_time_firstQ = (total_on_time_flight/total_flight)*100)
+
+print(Q1_on_time)
+```
+
+**Ans** The percentage of flights departed on time in the first quarter of 2023 is **63 %**
+
+6. Which month had the highest number of flights departing from JFK (John F. Kennedy International Airport)?
+
+```{r}
+highest_dep <- flights %>%
+  filter(origin == "JFK") %>%
+  group_by(month) %>%
+  summarise(number_of_flight = n()) %>%
+  arrange(desc(number_of_flight)) %>%
+  head(1)
+
+print(highest_dep)
+```
+
+**Ans** **3rd month** had 12,158 flights departing from JFK, which is the highest number from 2023.
+
+7. What is the longest distance flown by any flight in the dataset, and which flight (tailnum) achieved this?
+
+```{r}
+longest_flights <- flights %>%
+  select(tailnum, origin, dest, distance) %>%
+  filter(distance == max(distance, na.rm = TRUE))
+
+print(longest_flights)
+```
+
+**Ans** The longest distance is **4,983 miles**.
+
+8. Group the flights by carrier and calculate the average air time (air_time) for each carrier. Display the carrier and their average air time, sorted in descending order of average air time.
+
+```{r}
+avg_air_time <- flights %>%
+  select(carrier, air_time) %>%
+  group_by(carrier) %>%
+  summarise (avg_air_time = mean(air_time, na.rm = TRUE)) %>%
+  arrange(desc(avg_air_time))
+
+print(avg_air_time)
+```
+
+9. How many flights departed before 6 AM (hour < 6)?
+
+```{r}
+dep_before_6 <- flights %>%
+  select (carrier, hour, minute) %>%
+  filter (hour < 6) %>%
+  summarise(num_flights = n()) 
+
+print(dep_before_6)
+```
+
+**Ans** There are **3,270 flights** departed before 6 AM.
+
+10. Create a table showing the number of flights from each origin to each destination. Which origin-destination pair had the most flights?
+
+```{r}
+pair_flights <- flights %>%
+  select (origin, dest) %>%
+  group_by(origin, dest) %>%
+  summarise(num_of_origin_dest_pair = n()) %>%
+  arrange(desc(num_of_origin_dest_pair))
+
+print(pair_flights)
+```
+
+**Ans** **JFK-LAX** had the most flights, which is 10045 flights.
+
+
