@@ -129,8 +129,11 @@ labs(title = "Average Purchase Amount by Category",
        y = "Average Purchase Amount") +
 theme_minimal() +
 theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```After calculating the average purchase amount for each product category, I generated a bar chart to facilitate easier comprehension.I installed `ggplot2` for visualization with `ggplot`, and `forcats` to reorder charts by their height using `fct_reorder`.
+```
+I installed `ggplot2` for visualization with `ggplot`, and `forcats` to reorder charts by their height using `fct_reorder`.
 After calculating the average purchase amount for each product category, I generated a bar chart to facilitate easier comprehension.
+![Consumer behavior](images/Average purchase amount by category.jpeg)
+
 
 
 
